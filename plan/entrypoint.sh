@@ -96,9 +96,10 @@ fi
 
 if [[ "$GITHUB_EVENT_NAME" == 'pull_request' ]]; then
     # Post the comment.
-    PAYLOAD=$(echo '{}' | jq --arg body "$COMMENT" '.body = $body')
+
+    PAYLOAD=$(echo "$COMMENT" | jq -c -R '{body: .}')
     COMMENTS_URL=$(cat $GITHUB_EVENT_PATH | jq -r .pull_request.comments_url)
-    curl -s -S -H "Authorization: token $GITHUB_TOKEN" --header "Content-Type: application/json" --data "$PAYLOAD" "$COMMENTS_URL" > /dev/null
+    echo "$PAYLOAD" | curl -s -S -H "Authorization: token $GITHUB_TOKEN" --header "Content-Type: application/json" --silent --data @- "$COMMENTS_URL"
 fi
 
 exit $SUCCESS
